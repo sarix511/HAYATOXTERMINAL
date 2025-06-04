@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAYATO ELITE TERMINAL HUB - Kali Linux & Termux Rooted</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000000;
+            color: #00ff00;
+            font-family: 'Fira Code', monospace;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .terminal-container {
+            min-height: 100vh;
+            background: black;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* System Selector */
+        .system-selector {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1000;
+            display: flex;
+            gap: 12px;
+        }
+
+        .selector-button {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .selector-button:hover {
+            background: #00ff00;
+            color: #000000;
+        }
+
+        .selector-button.active {
+            background: #00ff00;
+            color: #000000;
+        }
+
+        .selector-button.kali {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .selector-button.kali:hover,
+        .selector-button.kali.active {
+            background: #ff4444;
+            color: #000000;
+        }
+
+        .selector-button.termux {
+            border-color: #ff8800;
+            color: #ff8800;
+        }
+
+        .selector-button.termux:hover,
+        .selector-button.termux.active {
+            background: #ff8800;
+            color: #000000;
+        }
+
+        /* Terminal Header */
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #1a1a1a;
+            border-bottom: 2px solid #00ff00;
+            padding: 12px 16px;
+            margin-top: 60px;
+        }
+
+        .terminal-header.kali {
+            border-bottom-color: #ff4444;
+        }
+
+        .terminal-header.termux {
+            border-bottom-color: #ff8800;
+        }
+
+        .window-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .control-dot.red { background: #ff5555; }
+        .control-dot.yellow { background: #ffff55; }
+        .control-dot.green { background: #55ff55; }
+
+        .terminal-title {
+            font-size: 14px;
+            color: #00ff00;
+            margin-left: 16px;
+        }
+
+        .terminal-title.kali {
+            color: #ff4444;
+        }
+
+        .terminal-title.termux {
+            color: #ff8800;
+        }
+
+        .header-right {
+            color: #00ff00;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .header-right.kali {
+            color: #ff4444;
+        }
+
+        .header-right.termux {
+            color: #ff8800;
+        }
+
+        /* Terminal Content */
+        .terminal-content {
+            flex: 1;
+            background: black;
+            color: #00ff00;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            padding: 16px;
+            overflow-y: auto;
+            height: calc(100vh - 120px);
+        }
+
+        .terminal-line {
+            line-height: 1.6;
+            margin-bottom: 4px;
+        }
+
+        .command-line {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .prompt {
+            color: #00ff00;
+            white-space: pre;
+        }
+
+        .prompt.kali {
+            color: #ff4444;
+        }
+
+        .prompt.termux {
+            color: #ff8800;
+        }
+
+        .command-text {
+            color: white;
+            margin-left: 8px;
+        }
+
+        .output {
+            color: #00ff99;
+        }
+
+        .error {
+            color: #ff4444;
+        }
+
+        .system {
+            color: #44aaff;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: #ffaa44;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #44ff44;
+            font-weight: bold;
+        }
+
+        /* Input Area */
+        .input-area {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .input-prompt {
+            color: #00ff00;
+            white-space: pre;
+        }
+
+        .input-prompt.kali {
+            color: #ff4444;
+        }
+
+        .input-prompt.termux {
+            color: #ff8800;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            margin-left: 8px;
+            caret-color: #00ff00;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #00ff00;
+            margin-left: 4px;
+            animation: blink 1s infinite;
+        }
+
+        .cursor.kali {
+            background: #ff4444;
+        }
+
+        .cursor.termux {
+            background: #ff8800;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #00ff00;
+        }
+
+        .status-indicator.kali {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .status-indicator.termux {
+            border-color: #ff8800;
+            color: #ff8800;
+        }
+
+        /* Animations */
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        @keyframes typing {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .typing {
+            animation: typing 0.5s ease-in;
+        }
+
+        /* Special file and directory colors */
+        .file { color: #ff6b6b; }
+        .dir { color: #4ecdc4; }
+        .executable { color: #ffeb3b; }
+
+        /* Hide scrollbar but keep functionality */
+        .terminal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal-content::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .terminal-content::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-container">
+        <!-- System Selector -->
+        <div class="system-selector">
+            <button class="selector-button kali active" onclick="switchSystem('kali')">
+                🛡️ Kali Linux (ROOTED)
+            </button>
+            <button class="selector-button termux" onclick="switchSystem('termux')">
+                📱 Termux (ROOTED)
+            </button>
+        </div>
+
+        <!-- Terminal Header -->
+        <div class="terminal-header kali" id="terminalHeader">
+            <div style="display: flex; align-items: center;">
+                <div class="window-controls">
+                    <div class="control-dot red"></div>
+                    <div class="control-dot yellow"></div>
+                    <div class="control-dot green"></div>
+                </div>
+                <span class="terminal-title kali" id="terminalTitle">root@kali: /root</span>
+            </div>
+            <div class="header-right kali" id="headerRight">KALI LINUX (ROOTED)</div>
+        </div>
+
+        <!-- Terminal Content -->
+        <div class="terminal-content" id="terminalContent">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+
+        <!-- Status Indicator -->
+        <div class="status-indicator kali" id="statusIndicator">
+            🔴 ROOT MODE ACTIVE | KALI LINUX | Press Enter to execute
+        </div>
+    </div>
+
+    <script>
+        class TerminalHub {
+            constructor() {
+                this.terminalContent = document.getElementById('terminalContent');
+                this.terminalTitle = document.getElementById('terminalTitle');
+                this.terminalHeader = document.getElementById('terminalHeader');
+                this.headerRight = document.getElementById('headerRight');
+                this.statusIndicator = document.getElementById('statusIndicator');
+                this.currentSystem = 'kali';
+                this.currentPath = '/root';
+                this.isTyping = false;
+                
+                this.systemConfigs = {
+                    kali: {
+                        user: 'root',
+                        hostname: 'kali',
+                        prompt: '#',
+                        title: 'KALI LINUX (ROOTED)',
+                        defaultPath: '/root',
+                        class: 'kali'
+                    },
+                    termux: {
+                        user: 'root',
+                        hostname: 'android',
+                        prompt: '#',
+                        title: 'TERMUX (ROOTED)',
+                        defaultPath: '/data/data/com.termux/files/usr',
+                        class: 'termux'
+                    }
+                };
+
+                this.kaliCommands = {
+                    'whoami': () => [{ type: 'output', content: 'root' }],
+                    'pwd': () => [{ type: 'output', content: this.currentPath }],
+                    'ls': () => [
+                        { type: 'output', content: 'total 128' },
+                        { type: 'output', content: 'drwx------  10 root root   4096 Dec 04 2024 .' },
+                        { type: 'output', content: 'drwxr-xr-x  20 root root   4096 Dec 04 2024 ..' },
+                        { type: 'output', content: '-rwx------   1 root root  16384 Dec 04 2024 <span class="file">exploit_toolkit.py</span>' },
+                        { type: 'output', content: '-rwx------   1 root root   8192 Dec 04 2024 <span class="file">advanced_scanner.sh</span>' },
+                        { type: 'output', content: '-rwx------   1 root root   4096 Dec 04 2024 <span class="file">payload_injector.py</span>' },
+                        { type: 'output', content: 'drwx------   2 root root   4096 Dec 04 2024 <span class="dir">classified</span>' },
+                        { type: 'output', content: 'drwx------   2 root root   4096 Dec 04 2024 <span class="dir">zero_day_exploits</span>' },
+                        { type: 'output', content: 'drwx------   2 root root   4096 Dec 04 2024 <span class="dir">keyloggers</span>' }
+                    ],
+                    'cat /etc/os-release': () => [
+                        { type: 'output', content: 'PRETTY_NAME="Kali GNU/Linux Rolling"' },
+                        { type: 'output', content: 'NAME="Kali GNU/Linux"' },
+                        { type: 'output', content: 'VERSION_ID="2024.4"' },
+                        { type: 'output', content: 'VERSION_CODENAME=kali-rolling' },
+                        { type: 'output', content: 'ID=kali' }
+                    ],
+                    'uname -a': () => [
+                        { type: 'output', content: 'Linux kali 6.5.0-kali3-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.5.6-1kali1 (2023-10-09) x86_64 GNU/Linux' }
+                    ],
+                    'nmap --version': () => [
+                        { type: 'output', content: 'Nmap version 7.94 ( https://nmap.org )' },
+                        { type: 'output', content: 'Platform: x86_64-pc-linux-gnu' },
+                        { type: 'output', content: 'Compiled with: liblua-5.4.4 openssl-3.0.11 libpcap-1.10.4' }
+                    ],
+                    'msfconsole --version': () => [
+                        { type: 'output', content: 'Framework Version: 6.3.40-dev' },
+                        { type: 'output', content: 'Console Version: 6.3.40-dev' }
+                    ],
+                    'aircrack-ng --version': () => [
+                        { type: 'output', content: 'Aircrack-ng 1.7' },
+                        { type: 'output', content: 'WiFi security auditing tools' }
+                    ],
+                    'sqlmap --version': () => [
+                        { type: 'output', content: 'sqlmap/1.7.11#stable' }
+                    ],
+                    'john --version': () => [
+                        { type: 'output', content: 'John the Ripper 1.9.0-jumbo-1' }
+                    ],
+                    'nmap -sS 192.168.1.1': () => [
+                        { type: 'system', content: 'Starting Nmap 7.94 ( https://nmap.org ) at ' + new Date().toLocaleString() },
+                        { type: 'output', content: 'Nmap scan report for router.local (192.168.1.1)' },
+                        { type: 'output', content: 'Host is up (0.0012s latency).' },
+                        { type: 'output', content: 'Not shown: 997 closed ports' },
+                        { type: 'output', content: 'PORT     STATE SERVICE' },
+                        { type: 'output', content: '22/tcp   open  ssh' },
+                        { type: 'output', content: '80/tcp   open  http' },
+                        { type: 'output', content: '443/tcp  open  https' },
+                        { type: 'output', content: '' },
+                        { type: 'system', content: 'Nmap done: 1 IP address (1 host up) scanned in 0.25 seconds' }
+                    ]
+                };
+
+                this.termuxCommands = {
+                    'whoami': () => [{ type: 'output', content: 'root' }],
+                    'pwd': () => [{ type: 'output', content: this.currentPath }],
+                    'ls': () => [
+                        { type: 'output', content: 'total 64' },
+                        { type: 'output', content: 'drwxr-xr-x  8 root root  4096 Dec 04 2024 .' },
+                        { type: 'output', content: 'drwxr-xr-x  3 root root  4096 Dec 04 2024 ..' },
+                        { type: 'output', content: 'drwxr-xr-x  2 root root  4096 Dec 04 2024 <span class="dir">bin</span>' },
+                        { type: 'output', content: 'drwxr-xr-x  2 root root  4096 Dec 04 2024 <span class="dir">etc</span>' },
+                        { type: 'output', content: 'drwxr-xr-x  3 root root  4096 Dec 04 2024 <span class="dir">include</span>' },
+                        { type: 'output', content: 'drwxr-xr-x  4 root root  4096 Dec 04 2024 <span class="dir">lib</span>' },
+                        { type: 'output', content: 'drwxr-xr-x  2 root root  4096 Dec 04 2024 <span class="dir">share</span>' },
+                        { type: 'output', content: 'drwxr-xr-x  2 root root  4096 Dec 04 2024 <span class="dir">tmp</span>' },
+                        { type: 'output', content: 'drwxr-xr-x  6 root root  4096 Dec 04 2024 <span class="dir">var</span>' }
+                    ],
+                    'cat /proc/version': () => [
+                        { type: 'output', content: 'Linux version 5.4.0+ (android-build@build-host) (Android clang version 12.0.5) #1 SMP PREEMPT' }
+                    ],
+                    'uname -a': () => [
+                        { type: 'output', content: 'Linux android 5.4.0+ #1 SMP PREEMPT aarch64 Android' }
+                    ],
+                    'getprop ro.build.version.release': () => [
+                        { type: 'output', content: '13' }
+                    ],
+                    'pm list packages | head -10': () => [
+                        { type: 'output', content: 'package:com.android.emergency' },
+                        { type: 'output', content: 'package:com.android.providers.telephony' },
+                        { type: 'output', content: 'package:com.google.android.gms' },
+                        { type: 'output', content: 'package:com.android.providers.calendar' },
+                        { type: 'output', content: 'package:com.android.providers.media' },
+                        { type: 'output', content: 'package:com.android.wallpapercropper' },
+                        { type: 'output', content: 'package:com.android.documentsui' },
+                        { type: 'output', content: 'package:com.android.gallery3d' },
+                        { type: 'output', content: 'package:com.android.externalstorage' },
+                        { type: 'output', content: 'package:com.android.htmlviewer' }
+                    ],
+                    'dumpsys battery': () => [
+                        { type: 'output', content: 'Current Battery Service state:' },
+                        { type: 'output', content: '  AC powered: false' },
+                        { type: 'output', content: '  USB powered: true' },
+                        { type: 'output', content: '  Wireless powered: false' },
+                        { type: 'output', content: '  Max charging current: 500000' },
+                        { type: 'output', content: '  Battery level: 85' },
+                        { type: 'output', content: '  Battery temperature: 350' }
+                    ],
+                    'su': () => [
+                        { type: 'success', content: 'Root access already granted' }
+                    ]
+                };
+
+                this.commonCommands = {
+                    'id': () => [
+                        { type: 'output', content: 'uid=0(root) gid=0(root) groups=0(root)' }
+                    ],
+                    'ps aux | head -10': () => [
+                        { type: 'output', content: 'USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND' },
+                        { type: 'output', content: 'root           1  0.1  0.1  16888  1064 ?        Ss   Dec04   0:01 /sbin/init' },
+                        { type: 'output', content: 'root          10  0.0  0.0      0     0 ?        I<   Dec04   0:00 [rcu_gp]' },
+                        { type: 'output', content: 'root         123  0.0  0.2  23456  2048 ?        S    Dec04   0:00 /usr/sbin/sshd' }
+                    ],
+                    'netstat -tulpn | head -5': () => [
+                        { type: 'output', content: 'Active Internet connections (only servers)' },
+                        { type: 'output', content: 'Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name' },
+                        { type: 'output', content: 'tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      123/sshd' },
+                        { type: 'output', content: 'tcp        0      0 127.0.0.1:5432          0.0.0.0:*               LISTEN      456/postgres' }
+                    ],
+                    'date': () => [
+                        { type: 'output', content: new Date().toString() }
+                    ],
+                    'clear': () => {
+                        this.terminalContent.innerHTML = '';
+                        this.createInputLine();
+                        return [];
+                    },
+                    'help': () => this.getHelpContent()
+                };
+
+                this.init();
+            }
+
+            getHelpContent() {
+                const isKali = this.currentSystem === 'kali';
+                return [
+                    { type: 'system', content: '╔══════════════════════════════════════════════════════════════╗' },
+                    { type: 'system', content: '║                HAYATO ELITE TERMINAL HUB                    ║' },
+                    { type: 'system', content: '║              KALI LINUX & TERMUX ROOTED                     ║' },
+                    { type: 'system', content: '╚══════════════════════════════════════════════════════════════╝' },
+                    { type: 'output', content: '' },
+                    { type: 'output', content: '🔧 SYSTEM COMMANDS:' },
+                    { type: 'output', content: '  whoami          - Display current user' },
+                    { type: 'output', content: '  pwd             - Print working directory' },
+                    { type: 'output', content: '  ls              - List directory contents' },
+                    { type: 'output', content: '  id              - Show user and group IDs' },
+                    { type: 'output', content: '  ps aux          - Show running processes' },
+                    { type: 'output', content: '  netstat -tulpn  - Network connections' },
+                    { type: 'output', content: '' },
+                    { type: 'output', content: isKali ? '🛡️ KALI SECURITY TOOLS:' : '📱 TERMUX ANDROID TOOLS:' },
+                    ...(isKali ? [
+                        { type: 'output', content: '  nmap --version  - Network scanner' },
+                        { type: 'output', content: '  nmap -sS <ip>   - TCP SYN scan' },
+                        { type: 'output', content: '  msfconsole --version - Metasploit framework' },
+                        { type: 'output', content: '  aircrack-ng --version - WiFi security auditing' },
+                        { type: 'output', content: '  sqlmap --version - SQL injection tool' },
+                        { type: 'output', content: '  john --version  - Password cracker' }
+                    ] : [
+                        { type: 'output', content: '  pm list packages - List installed packages' },
+                        { type: 'output', content: '  dumpsys battery - Battery information' },
+                        { type: 'output', content: '  getprop ro.build.version.release - Android version' },
+                        { type: 'output', content: '  cat /proc/version - Kernel information' },
+                        { type: 'output', content: '  su              - Root access check' }
+                    ]),
+                    { type: 'output', content: '' },
+                    { type: 'output', content: '🎮 TERMINAL:' },
+                    { type: 'output', content: '  clear           - Clear terminal' },
+                    { type: 'output', content: '  date            - Show current date/time' }
+                ];
+            }
+
+            updateInterface() {
+                const config = this.systemConfigs[this.currentSystem];
+                
+                // Update header classes
+                this.terminalHeader.className = `terminal-header ${config.class}`;
+                this.terminalTitle.className = `terminal-title ${config.class}`;
+                this.headerRight.className = `header-right ${config.class}`;
+                this.statusIndicator.className = `status-indicator ${config.class}`;
+                
+                // Update content
+                const path = this.currentPath.replace(`/home/${config.user}`, '~').replace('/root', '~');
+                this.terminalTitle.textContent = `${config.user}@${config.hostname}: ${path}`;
+                this.headerRight.textContent = config.title;
+                this.statusIndicator.textContent = `🔴 ROOT MODE ACTIVE | ${config.title} | Press Enter to execute`;
+                
+                // Update selector buttons
+                document.querySelectorAll('.selector-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`.selector-button.${config.class}`).classList.add('active');
+            }
+
+            getPrompt() {
+                const config = this.systemConfigs[this.currentSystem];
+                const user = config.user;
+                const host = config.hostname;
+                const symbol = config.prompt;
+                const path = this.currentPath.replace(`/home/${user}`, '~').replace('/root', '~');
+                return `┌──(${user}@${host})-[${path}]\n└─${symbol}`;
+            }
+
+            addLine(content, type = 'output') {
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+                
+                if (type === 'command') {
+                    const config = this.systemConfigs[this.currentSystem];
+                    line.innerHTML = `<div class="command-line">
+                        <span class="prompt ${config.class}">${this.getPrompt()}</span>
+                        <span class="command-text">${content}</span>
+                    </div>`;
+                } else {
+                    line.innerHTML = `<div class="${type}">${content}</div>`;
+                }
+                
+                this.terminalContent.appendChild(line);
+                this.scrollToBottom();
+            }
+
+            createInputLine() {
+                const config = this.systemConfigs[this.currentSystem];
+                const inputContainer = document.createElement('div');
+                inputContainer.className = 'input-area';
+                inputContainer.innerHTML = `
+                    <span class="input-prompt ${config.class}">${this.getPrompt()}</span>
+                    <input type="text" class="terminal-input" autocomplete="off" spellcheck="false">
+                    <span class="cursor ${config.class}"></span>
+                `;
+                
+                this.terminalContent.appendChild(inputContainer);
+                
+                const input = inputContainer.querySelector('.terminal-input');
+                input.focus();
+                
+                input.addEventListener('keydown', (e) => this.handleKeyDown(e, input, inputContainer));
+                
+                this.scrollToBottom();
+            }
+
+            async handleKeyDown(e, input, inputContainer) {
+                if (e.key === 'Enter' && input.value.trim() && !this.isTyping) {
+                    const command = input.value.trim();
+                    
+                    inputContainer.remove();
+                    this.addLine(command, 'command');
+                    
+                    await this.executeCommand(command);
+                    this.createInputLine();
+                }
+            }
+
+            async executeCommand(command) {
+                const lowerCommand = command.toLowerCase();
+                
+                if (lowerCommand === 'clear') {
+                    this.terminalContent.innerHTML = '';
+                    return;
+                }
+                
+                this.isTyping = true;
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 800 + 200));
+                
+                let output = [];
+                
+                if (this.currentSystem === 'kali' && this.kaliCommands[lowerCommand]) {
+                    output = this.kaliCommands[lowerCommand]();
+                } else if (this.currentSystem === 'termux' && this.termuxCommands[lowerCommand]) {
+                    output = this.termuxCommands[lowerCommand]();
+                } else if (this.commonCommands[lowerCommand]) {
+                    output = this.commonCommands[lowerCommand]();
+                } else {
+                    output = [
+                        { type: 'error', content: `bash: ${command}: command not found` },
+                        { type: 'output', content: 'Type "help" for available commands.' }
+                    ];
+                }
+                
+                output.forEach(line => {
+                    this.addLine(line.content, line.type);
+                });
+                
+                this.isTyping = false;
+            }
+
+            scrollToBottom() {
+                this.terminalContent.scrollTop = this.terminalContent.scrollHeight;
+            }
+
+            switchSystem(system) {
+                this.currentSystem = system;
+                this.currentPath = this.systemConfigs[system].defaultPath;
+                this.terminalContent.innerHTML = '';
+                this.updateInterface();
+                this.initializeTerminal();
+            }
+
+            initializeTerminal() {
+                const config = this.systemConfigs[this.currentSystem];
+                const bootSequence = [
+                    { type: 'system', content: '╔══════════════════════════════════════════════════════════════╗' },
+                    { type: 'system', content: '║  ██╗  ██╗ █████╗ ██╗   ██╗ █████╗ ████████╗ ██████╗        ║' },
+                    { type: 'system', content: '║  ██║  ██║██╔══██╗╚██╗ ██╔╝██╔══██╗╚══██╔══╝██╔═══██╗       ║' },
+                    { type: 'system', content: '║  ███████║███████║ ╚████╔╝ ███████║   ██║   ██║   ██║       ║' },
+                    { type: 'system', content: '║  ██╔══██║██╔══██║  ╚██╔╝  ██╔══██║   ██║   ██║   ██║       ║' },
+                    { type: 'system', content: '║  ██║  ██║██║  ██║   ██║   ██║  ██║   ██║   ╚██████╔╝       ║' },
+                    { type: 'system', content: '║  ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝    ╚═════╝        ║' },
+                    { type: 'system', content: '║                                                              ║' },
+                    { type: 'system', content: `║                 ${config.title.padEnd(35)}║` },
+                    { type: 'system', content: '║                    [ROOT ACCESS]                            ║' },
+                    { type: 'system', content: '╚══════════════════════════════════════════════════════════════╝' },
+                    { type: 'output', content: '' },
+                    { type: 'warning', content: '⚠️  ROOT ACCESS ACTIVE - HANDLE WITH CARE!' },
+                    { type: 'output', content: `Welcome to ${config.title}` },
+                    { type: 'output', content: 'Last login: Wed Dec  4 12:00:00 2024 from 192.168.1.1' },
+                    { type: 'output', content: '' },
+                    { type: 'system', content: '💡 Type "help" for available commands' },
+                    { type: 'output', content: '' }
+                ];
+
+                bootSequence.forEach(line => {
+                    this.addLine(line.content, line.type);
+                });
+
+                this.createInputLine();
+            }
+
+            init() {
+                this.updateInterface();
+                this.initializeTerminal();
+            }
+        }
+
+        // Global functions
+        function switchSystem(system) {
+            window.terminal.switchSystem(system);
+        }
+
+        // Initialize terminal when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.terminal = new TerminalHub();
+        });
+    </script>
+</body>
+</html>
